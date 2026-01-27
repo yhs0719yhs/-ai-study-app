@@ -51,3 +51,17 @@
 - [ ] Vercel 프로젝트 생성 및 연동
 - [ ] 환경 변수 설정 (OpenAI, Supabase)
 - [ ] 자동 배포 파이프라인 확인
+
+
+## GitHub 저장소 생성 및 푸시
+- [ ] GitHub에 새 저장소 생성 (yhs0719yhs 계정)
+- [ ] 로컬 저장소를 GitHub 원격 저장소로 변경
+- [ ] 모든 코드를 GitHub에 푸시
+- [ ] GitHub 저장소 확인
+
+## Vercel 배포 설정
+- [ ] Vercel 프로젝트 생성
+- [ ] GitHub 저장소 연동
+- [ ] 환경 변수 설정 (OPENAI_API_KEY, SUPABASE_URL, SUPABASE_ANON_KEY)
+- [ ] 자동 배포 확인
+- [ ] 배포 URL 테스트
