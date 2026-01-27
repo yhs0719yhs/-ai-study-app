@@ -219,51 +219,48 @@ export function SteppedSolution({ steps, rawSolution }: SteppedSolutionProps) {
       </View>
 
       {/* Divider */}
-      {finalAnswer && (
-        <View
-          style={{
-            height: 1,
-            backgroundColor: colors.border,
-            marginVertical: 16,
-          }}
-        />
-      )}
+      <View
+        style={{
+          height: 1,
+          backgroundColor: colors.border,
+          marginVertical: 16,
+        }}
+      />
 
       {/* Final Answer */}
-      {finalAnswer && (
-        <View
+      <View
+        style={{
+          paddingVertical: 24,
+          paddingHorizontal: 16,
+          backgroundColor: finalAnswer ? colors.success + "15" : colors.warning + "15",
+          borderRadius: 12,
+          borderWidth: 2,
+          borderColor: finalAnswer ? colors.success : colors.warning,
+          gap: 12,
+          alignItems: "center",
+        }}
+      >
+        <Text
           style={{
-            marginTop: 16,
-            paddingVertical: 16,
-            paddingHorizontal: 16,
-            backgroundColor: colors.success + "15",
-            borderRadius: 12,
-            borderWidth: 2,
-            borderColor: colors.success,
-            gap: 8,
+            fontSize: 14,
+            fontWeight: "700",
+            color: finalAnswer ? colors.success : colors.warning,
           }}
         >
-          <Text
-            style={{
-              fontSize: 14,
-              fontWeight: "700",
-              color: colors.success,
-            }}
-          >
-            ✓ 최종 답
-          </Text>
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: "700",
-              color: colors.foreground,
-              lineHeight: 28,
-            }}
-          >
-            {finalAnswer}
-          </Text>
-        </View>
-      )}
+          {finalAnswer ? "✓ 최종 답" : "⚠ 답 없음"}
+        </Text>
+        <Text
+          style={{
+            fontSize: 32,
+            fontWeight: "800",
+            color: colors.foreground,
+            lineHeight: 44,
+            textAlign: "center",
+          }}
+        >
+          {finalAnswer || "답을 찾을 수 없습니다"}
+        </Text>
+      </View>
     </View>
   );
 }

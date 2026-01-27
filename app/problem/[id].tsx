@@ -158,6 +158,50 @@ export default function ProblemDetailScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* Tab Navigation for Multiple Problems */}
+        {hasNavigation && (
+          <View
+            style={{
+              flexDirection: "row",
+              borderBottomWidth: 1,
+              borderBottomColor: colors.border,
+              backgroundColor: colors.background,
+            }}
+          >
+            {allProblems.map((p, index) => (
+              <TouchableOpacity
+                key={p.id}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setCurrentIndex(index);
+                  setProblem(p);
+                  if (p.solution) {
+                    setParsedSolution(parseSolution(p.solution));
+                  }
+                }}
+                style={{
+                  flex: 1,
+                  paddingVertical: 12,
+                  paddingHorizontal: 8,
+                  borderBottomWidth: currentIndex === index ? 3 : 0,
+                  borderBottomColor: currentIndex === index ? colors.primary : "transparent",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: currentIndex === index ? "700" : "500",
+                    color: currentIndex === index ? colors.primary : colors.muted,
+                  }}
+                >
+                  문제 {index + 1}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
         <View className="p-6 gap-6">
           {/* Problem Number Badge */}
           {problem.problemNumber && (
