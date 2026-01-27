@@ -1,46 +1,306 @@
-import { ScrollView, Text, View, TouchableOpacity } from "react-native";
+import { ScrollView, Text, View, TouchableOpacity, ActivityIndicator, Alert } from "react-native";
+import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
+import { useState, useEffect } from "react";
+import * as FileSystem from "expo-file-system/legacy";
 
 import { ScreenContainer } from "@/components/screen-container";
+import { IconSymbol } from "@/components/ui/icon-symbol";
+import { ImagePickerSheet } from "@/components/image-picker-sheet";
+import { useColors } from "@/hooks/use-colors";
+import { takePicture, pickImage, pickFile } from "@/lib/image-picker";
+import { trpc } from "@/lib/trpc";
+import { saveProblem, getAllProblems } from "@/lib/storage";
+import { Problem } from "@/shared/types";
 
-/**
- * Home Screen - NativeWind Example
- *
- * This template uses NativeWind (Tailwind CSS for React Native).
- * You can use familiar Tailwind classes directly in className props.
- *
- * Key patterns:
- * - Use `className` instead of `style` for most styling
- * - Theme colors: use tokens directly (bg-background, text-foreground, bg-primary, etc.); no dark: prefix needed
- * - Responsive: standard Tailwind breakpoints work on web
- * - Custom colors defined in tailwind.config.js
- */
 export default function HomeScreen() {
+  const router = useRouter();
+  const colors = useColors();
+  const [showPicker, setShowPicker] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("문제를 분석하는 중입니다...");
+  const [recentProblems, setRecentProblems] = useState<Problem[]>([]);
+  const analyzeMutation = trpc.problem.analyze.useMutation();
+
+  useEffect(() => {
+    loadRecentProblems();
+  }, []);
+
+  const loadRecentProblems = async () => {
+    try {
+      const problems = await getAllProblems();
+      setRecentProblems(problems.slice(0, 3));
+    } catch (error) {
+      console.error("최근 문제 로드 오류:", error);
+    }
+  };
+
+  const handleCapturePress = () => {
+    if (loading) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setShowPicker(true);
+  };
+
+  const analyzeImage = async (imageUri: string) => {
+    try {
+      setLoadingMessage("이미지를 읽는 중입니다...");
+      console.log("이미지 URI:", imageUri);
+
+      const base64 = await FileSystem.readAsStringAsync(imageUri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      console.log("Base64 변환 완료, 길이:", base64.length);
+      setLoadingMessage("AI가 문제를 분석하는 중입니다...");
+
+      const result = await analyzeMutation.mutateAsync({
+        imageBase64: base64,
+        imageName: `problem_${Date.now()}.jpg`,
+      });
+
+      console.log("분석 결과:", result);
+
+      const problem: Problem = {
+        id: Date.now().toString(),
+        imageUri: imageUri,
+        imageUrl: result.imageUrl,
+        solution: result.solution,
+        problemType: result.problemType,
+        subject: result.subject,
+        createdAt: new Date().toISOString(),
+      };
+
+      await saveProblem(problem);
+      await loadRecentProblems();
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert("분석 완료", "문제 분석이 완료되었습니다.", [
+        {
+          text: "확인",
+          onPress: () => router.push(`/problem/${problem.id}`),
+        },
+      ]);
+    } catch (error) {
+      console.error("분석 오류:", error);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      
+      let errorMessage = "문제 분석 중 오류가 발생했습니다.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert("오류", errorMessage);
+    } finally {
+      setLoading(false);
+      setLoadingMessage("문제를 분석하는 중입니다...");
+    }
+  };
+
+  const handleCamera = async () => {
+    setShowPicker(false);
+    setLoading(true);
+
+    try {
+      const result = await takePicture();
+      if (result) {
+        await analyzeImage(result.uri);
+      } else {
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("카메라 오류:", error);
+      Alert.alert("오류", "카메라 사용 중 오류가 발생했습니다.");
+      setLoading(false);
+    }
+  };
+
+  const handleGallery = async () => {
+    setShowPicker(false);
+    setLoading(true);
+
+    try {
+      const result = await pickImage();
+      if (result) {
+        await analyzeImage(result.uri);
+      } else {
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("갤러리 오류:", error);
+      Alert.alert("오류", "갤러리 접근 중 오류가 발생했습니다.");
+      setLoading(false);
+    }
+  };
+
+  const handleFile = async () => {
+    setShowPicker(false);
+    setLoading(true);
+
+    try {
+      const result = await pickFile();
+      if (result) {
+        await analyzeImage(result.uri);
+      } else {
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("파일 선택 오류:", error);
+      Alert.alert("오류", "파일 선택 중 오류가 발생했습니다.");
+      setLoading(false);
+    }
+  };
+
   return (
     <ScreenContainer className="p-6">
+      <ImagePickerSheet
+        visible={showPicker}
+        onClose={() => setShowPicker(false)}
+        onCamera={handleCamera}
+        onGallery={handleGallery}
+        onFile={handleFile}
+      />
+
+      {loading && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+        >
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text className="text-white mt-4 text-center px-6">{loadingMessage}</Text>
+        </View>
+      )}
+
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="flex-1 gap-8">
-          {/* Hero Section */}
-          <View className="items-center gap-2">
-            <Text className="text-4xl font-bold text-foreground">Welcome</Text>
-            <Text className="text-base text-muted text-center">
-              Edit app/(tabs)/index.tsx to get started
+        <View className="flex-1 gap-6">
+          {/* Header */}
+          <View className="mb-2">
+            <Text className="text-3xl font-bold text-foreground">AI 공부 도우미</Text>
+            <Text className="text-sm text-muted mt-1">
+              문제를 촬영하면 AI가 풀이해드립니다
             </Text>
           </View>
 
-          {/* Example Card */}
-          <View className="w-full max-w-sm self-center bg-surface rounded-2xl p-6 shadow-sm border border-border">
-            <Text className="text-lg font-semibold text-foreground mb-2">NativeWind Ready</Text>
-            <Text className="text-sm text-muted leading-relaxed">
-              Use Tailwind CSS classes directly in your React Native components.
-            </Text>
-          </View>
+          {/* Main CTA Button */}
+          <TouchableOpacity
+            onPress={handleCapturePress}
+            disabled={loading}
+            style={{
+              opacity: loading ? 0.6 : 1,
+            }}
+            activeOpacity={0.8}
+          >
+            <View
+              style={{
+                backgroundColor: colors.primary,
+                borderRadius: 24,
+                paddingVertical: 32,
+                paddingHorizontal: 24,
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <View
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 32,
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <IconSymbol name="camera.fill" size={32} color={colors.background} />
+              </View>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "600",
+                  color: colors.background,
+                }}
+              >
+                문제 촬영하기
+              </Text>
+              <Text
+                style={{
+                  fontSize: 13,
+                  color: "rgba(255, 255, 255, 0.8)",
+                  textAlign: "center",
+                }}
+              >
+                카메라, 갤러리, 또는 파일에서 선택
+              </Text>
+            </View>
+          </TouchableOpacity>
 
-          {/* Example Button */}
-          <View className="items-center">
-            <TouchableOpacity className="bg-primary px-6 py-3 rounded-full active:opacity-80">
-              <Text className="text-background font-semibold">Get Started</Text>
-            </TouchableOpacity>
-          </View>
+          {/* Recent Problems */}
+          {recentProblems.length > 0 && (
+            <View className="gap-4">
+              <View className="flex-row justify-between items-center">
+                <Text className="text-lg font-semibold text-foreground">최근 풀이한 문제</Text>
+                <TouchableOpacity
+                  onPress={() => router.push("/history")}
+                  activeOpacity={0.7}
+                >
+                  <Text className="text-sm text-primary font-medium">모두 보기</Text>
+                </TouchableOpacity>
+              </View>
+
+              {recentProblems.map((problem) => (
+                <TouchableOpacity
+                  key={problem.id}
+                  onPress={() => router.push(`/problem/${problem.id}`)}
+                  activeOpacity={0.7}
+                >
+                  <View className="bg-surface rounded-2xl p-4 border border-border flex-row gap-4 items-center">
+                    <View className="flex-1 gap-2">
+                      <Text className="text-sm font-semibold text-foreground">
+                        {problem.problemType}
+                      </Text>
+                      <Text className="text-xs text-muted">
+                        {new Date(problem.createdAt).toLocaleString("ko-KR")}
+                      </Text>
+                    </View>
+                    <IconSymbol name="chevron.right" size={20} color={colors.muted} />
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {/* Empty State */}
+          {recentProblems.length === 0 && (
+            <View className="flex-1 justify-center items-center gap-4 py-12">
+              <View
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: 40,
+                  backgroundColor: colors.surface,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                }}
+              >
+                <IconSymbol name="paperplane.fill" size={40} color={colors.muted} />
+              </View>
+              <Text className="text-lg font-semibold text-foreground text-center">
+                아직 풀이한 문제가 없습니다
+              </Text>
+              <Text className="text-sm text-muted text-center">
+                위의 버튼을 눌러 문제를 촬영해보세요
+              </Text>
+            </View>
+          )}
         </View>
       </ScrollView>
     </ScreenContainer>
