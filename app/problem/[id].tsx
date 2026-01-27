@@ -149,7 +149,7 @@ export default function ProblemDetailScreen() {
             }}
             style={{ padding: 8 }}
           >
-            <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color={colors.foreground} />
+            <IconSymbol name="chevron.left" size={24} color={colors.foreground} />
           </TouchableOpacity>
           <Text className="text-lg font-semibold text-foreground">문제 상세</Text>
           <TouchableOpacity
@@ -262,7 +262,7 @@ export default function ProblemDetailScreen() {
                   opacity: canGoPrevious ? 1 : 0.5,
                 }}
               >
-                <IconSymbol name="chevron.left.forwardslash.chevron.right" size={24} color={colors.background} />
+                <IconSymbol name="chevron.left" size={24} color={colors.background} />
               </TouchableOpacity>
 
               <TouchableOpacity

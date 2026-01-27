@@ -122,7 +122,7 @@ export default function ProblemTabsScreen() {
             style={{ padding: 8 }}
           >
             <IconSymbol
-              name="chevron.left.forwardslash.chevron.right"
+              name="chevron.left"
               size={24}
               color={colors.foreground}
             />
