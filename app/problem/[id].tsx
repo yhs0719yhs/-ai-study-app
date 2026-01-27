@@ -34,13 +34,11 @@ export default function ProblemDetailScreen() {
       const data = await getProblemById(id);
       setProblem(data);
 
-      // 풀이를 단계별로 파싱
       if (data?.solution) {
         const parsed = parseSolution(data.solution);
         setParsedSolution(parsed);
       }
 
-      // 선택된 문제들이 있으면 로드
       if (selectedIds) {
         const ids = selectedIds.split(",");
         const problems = await getAllProblems();
@@ -209,30 +207,6 @@ export default function ProblemDetailScreen() {
             )}
           </View>
 
-          {/* Navigation Counter */}
-          {hasNavigation && (
-            <View
-              style={{
-                paddingVertical: 8,
-                paddingHorizontal: 12,
-                backgroundColor: colors.surface,
-                borderRadius: 8,
-                borderWidth: 1,
-                borderColor: colors.border,
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: 12,
-                  color: colors.muted,
-                  textAlign: "center",
-                }}
-              >
-                {currentIndex + 1} / {allProblems.length}
-              </Text>
-            </View>
-          )}
-
           {/* Stepped Solution */}
           {parsedSolution && (
             <View className="bg-surface rounded-2xl p-6 border border-border">
@@ -240,46 +214,70 @@ export default function ProblemDetailScreen() {
             </View>
           )}
 
-          {/* Navigation Arrows */}
+          {/* Navigation Section - Below Solution */}
           {hasNavigation && (
-            <View
-              style={{
-                flexDirection: "row",
-                gap: 12,
-                justifyContent: "center",
-              }}
-            >
-              <TouchableOpacity
-                onPress={handlePrevious}
-                disabled={!canGoPrevious}
+            <View style={{ gap: 12 }}>
+              {/* Divider */}
+              <View
                 style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
-                  backgroundColor: canGoPrevious ? colors.primary : colors.muted,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  opacity: canGoPrevious ? 1 : 0.5,
+                  height: 1,
+                  backgroundColor: colors.border,
                 }}
-              >
-                <IconSymbol name="chevron.left" size={24} color={colors.background} />
-              </TouchableOpacity>
+              />
 
-              <TouchableOpacity
-                onPress={handleNext}
-                disabled={!canGoNext}
+              {/* Navigation Controls */}
+              <View
                 style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
-                  backgroundColor: canGoNext ? colors.primary : colors.muted,
+                  flexDirection: "row",
                   justifyContent: "center",
                   alignItems: "center",
-                  opacity: canGoNext ? 1 : 0.5,
+                  gap: 16,
                 }}
               >
-                <IconSymbol name="chevron.right" size={24} color={colors.background} />
-              </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handlePrevious}
+                  disabled={!canGoPrevious}
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 24,
+                    backgroundColor: canGoPrevious ? colors.primary : colors.muted,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    opacity: canGoPrevious ? 1 : 0.5,
+                  }}
+                >
+                  <IconSymbol name="chevron.left" size={24} color={colors.background} />
+                </TouchableOpacity>
+
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: "600",
+                    color: colors.foreground,
+                    minWidth: 60,
+                    textAlign: "center",
+                  }}
+                >
+                  {currentIndex + 1} / {allProblems.length}
+                </Text>
+
+                <TouchableOpacity
+                  onPress={handleNext}
+                  disabled={!canGoNext}
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 24,
+                    backgroundColor: canGoNext ? colors.primary : colors.muted,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    opacity: canGoNext ? 1 : 0.5,
+                  }}
+                >
+                  <IconSymbol name="chevron.right" size={24} color={colors.background} />
+                </TouchableOpacity>
+              </View>
             </View>
           )}
 
