@@ -7,4 +7,11 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  // OpenAI API
+  openaiApiKey: process.env.OPENAI_API_KEY ?? "",
+  // Supabase
+  supabaseUrl: process.env.SUPABASE_URL ?? "",
+  supabaseAnonKey: process.env.SUPABASE_ANON_KEY ?? "",
+  // Vercel
+  vercelDeploymentUrl: process.env.VERCEL_DEPLOYMENT_URL ?? "",
 };

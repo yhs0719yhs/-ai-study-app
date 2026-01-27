@@ -100,3 +100,19 @@
 - [ ] \dot, \cdots, \div, \times 등 남은 LaTeX 기호 변환
 - [ ] 소수점 표현 정리 (\cdots → ···)
 - [ ] 나눗셈 기호 정리 (\div → ÷)
+
+
+## 외부 서비스 연동
+- [x] OpenAI API 통합 (문제 분석)
+- [x] Supabase 데이터베이스 연동
+- [x] 환경 변수 설정 (OpenAI, Supabase, Vercel)
+- [x] 외부 서비스 테스트 작성 및 통과
+- [ ] GitHub 저장소 연동
+- [ ] Vercel 배포 설정
+- [ ] 자동 배포 파이프라인 구성
+
+## 배포 준비
+- [x] 배포 가이드 문서 작성 (DEPLOYMENT.md)
+- [ ] 프로덕션 환경 변수 설정
+- [ ] 최종 테스트
+- [ ] 배포 실행
