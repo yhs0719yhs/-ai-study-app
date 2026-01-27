@@ -6,16 +6,19 @@ import { SolutionStep } from "@/shared/types";
 import { useColors } from "@/hooks/use-colors";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { formatSolution } from "@/lib/math-formatter";
+import { extractFinalAnswer } from "@/lib/solution-parser";
 
 interface SteppedSolutionProps {
   steps: SolutionStep[];
+  rawSolution?: string;
 }
 
-export function SteppedSolution({ steps }: SteppedSolutionProps) {
+export function SteppedSolution({ steps, rawSolution }: SteppedSolutionProps) {
   const colors = useColors();
   const [expandedSteps, setExpandedSteps] = useState<Set<number>>(
     new Set([steps[0]?.stepNumber])
   );
+  const finalAnswer = rawSolution ? extractFinalAnswer(rawSolution) : null;
 
   const toggleStep = (stepNumber: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -214,6 +217,42 @@ export function SteppedSolution({ steps }: SteppedSolutionProps) {
           );
         })}
       </View>
+
+      {/* Final Answer */}
+      {finalAnswer && (
+        <View
+          style={{
+            marginTop: 16,
+            paddingVertical: 16,
+            paddingHorizontal: 16,
+            backgroundColor: colors.success + "15",
+            borderRadius: 12,
+            borderWidth: 2,
+            borderColor: colors.success,
+            gap: 8,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 14,
+              fontWeight: "700",
+              color: colors.success,
+            }}
+          >
+            ✓ 최종 답
+          </Text>
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: "600",
+              color: colors.foreground,
+              lineHeight: 24,
+            }}
+          >
+            {finalAnswer}
+          </Text>
+        </View>
+      )}
     </View>
   );
 }

@@ -20,6 +20,8 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("문제를 분석하는 중입니다...");
   const [recentProblems, setRecentProblems] = useState<Problem[]>([]);
+  const [selectedProblems, setSelectedProblems] = useState<Set<string>>(new Set());
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
   const analyzeMutation = trpc.problem.analyze.useMutation();
 
   useEffect(() => {
@@ -150,6 +152,26 @@ export default function HomeScreen() {
     }
   };
 
+  const toggleProblemSelection = (problemId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const newSelected = new Set(selectedProblems);
+    if (newSelected.has(problemId)) {
+      newSelected.delete(problemId);
+    } else {
+      newSelected.add(problemId);
+    }
+    setSelectedProblems(newSelected);
+  };
+
+  const handleViewSelected = () => {
+    if (selectedProblems.size < 2) {
+      Alert.alert("알림", "2개 이상의 문제를 선택해주세요.");
+      return;
+    }
+    const selectedIds = Array.from(selectedProblems).join(",");
+    router.push(`/problem-tabs/${selectedIds}`);
+  };
+
   return (
     <ScreenContainer className="p-6">
       <ImagePickerSheet
@@ -254,25 +276,88 @@ export default function HomeScreen() {
                 </TouchableOpacity>
               </View>
 
-              {recentProblems.map((problem) => (
-                <TouchableOpacity
-                  key={problem.id}
-                  onPress={() => router.push(`/problem/${problem.id}`)}
-                  activeOpacity={0.7}
-                >
-                  <View className="bg-surface rounded-2xl p-4 border border-border flex-row gap-4 items-center">
-                    <View className="flex-1 gap-2">
-                      <Text className="text-sm font-semibold text-foreground">
-                        {problem.problemType}
-                      </Text>
-                      <Text className="text-xs text-muted">
-                        {new Date(problem.createdAt).toLocaleString("ko-KR")}
-                      </Text>
+              {isSelectionMode && selectedProblems.size > 0 && (
+                <View className="flex-row gap-2 mt-4">
+                  <TouchableOpacity
+                    onPress={() => {
+                      setIsSelectionMode(false);
+                      setSelectedProblems(new Set());
+                    }}
+                    className="flex-1 bg-surface rounded-lg py-3 border border-border"
+                  >
+                    <Text className="text-center text-foreground font-semibold">취소</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={handleViewSelected}
+                    className="flex-1 bg-primary rounded-lg py-3"
+                  >
+                    <Text className="text-center text-background font-semibold">
+                      {selectedProblems.size}개 보기
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {recentProblems.map((problem) => {
+                const isSelected = selectedProblems.has(problem.id);
+                return (
+                  <TouchableOpacity
+                    key={problem.id}
+                    onPress={() => {
+                      if (isSelectionMode) {
+                        toggleProblemSelection(problem.id);
+                      } else {
+                        router.push(`/problem/${problem.id}`);
+                      }
+                    }}
+                    onLongPress={() => {
+                      if (!isSelectionMode) {
+                        setIsSelectionMode(true);
+                        toggleProblemSelection(problem.id);
+                      }
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View
+                      className={`rounded-2xl p-4 border flex-row gap-4 items-center ${
+                        isSelected
+                          ? "bg-primary/10 border-primary"
+                          : "bg-surface border-border"
+                      }`}
+                    >
+                      {isSelectionMode && (
+                        <View
+                          style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: 12,
+                            backgroundColor: isSelected ? colors.primary : colors.surface,
+                            borderWidth: 2,
+                            borderColor: isSelected ? colors.primary : colors.border,
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        >
+                          {isSelected && (
+                            <Text style={{ color: colors.background, fontWeight: "bold" }}>
+                              ✓
+                            </Text>
+                          )}
+                        </View>
+                      )}
+                      <View className="flex-1 gap-2">
+                        <Text className="text-sm font-semibold text-foreground">
+                          {problem.problemType}
+                        </Text>
+                        <Text className="text-xs text-muted">
+                          {new Date(problem.createdAt).toLocaleString("ko-KR")}
+                        </Text>
+                      </View>
+                      <IconSymbol name="chevron.right" size={20} color={colors.muted} />
                     </View>
-                    <IconSymbol name="chevron.right" size={20} color={colors.muted} />
-                  </View>
-                </TouchableOpacity>
-              ))}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           )}
 

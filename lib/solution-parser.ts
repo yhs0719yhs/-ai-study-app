@@ -99,9 +99,32 @@ export function cleanBulletPoints(text: string): string {
   return text
     .split("\n")
     .map((line) => {
-      // 불릿 포인트 제거
       return line.replace(/^[\s\*\-\•]+/, "").trim();
     })
     .filter((line) => line.length > 0)
     .join("\n");
+}
+
+/**
+ * 풀이 텍스트에서 최종 답 추출
+ */
+export function extractFinalAnswer(solution: string): string | null {
+  const answerPatterns = [
+    /(?:최종\s*)?답\s*[:：]\s*(.+?)(?=\n|$)/i,
+    /\*\*(?:최종\s*)?답\*\*\s*[:：]\s*(.+?)(?=\n|$)/i,
+    /Answer\s*[:：]\s*(.+?)(?=\n|$)/i,
+    /따라서\s*(?:최종\s*)?답은\s*(.+?)(?=\n|$)/i,
+  ];
+
+  for (const pattern of answerPatterns) {
+    const match = solution.match(pattern);
+    if (match && match[1]) {
+      let answer = match[1].trim();
+      answer = answer.replace(/\*\*(.*?)\*\*/g, "$1");
+      answer = answer.replace(/\*(.*?)\*/g, "$1");
+      return answer.trim();
+    }
+  }
+
+  return null;
 }

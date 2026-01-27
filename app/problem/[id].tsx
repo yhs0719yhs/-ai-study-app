@@ -213,7 +213,7 @@ export default function ProblemDetailScreen() {
           {/* Stepped Solution */}
           {parsedSolution && (
             <View className="bg-surface rounded-2xl p-6 border border-border">
-              <SteppedSolution steps={parsedSolution.steps} />
+              <SteppedSolution steps={parsedSolution.steps} rawSolution={problem.solution} />
             </View>
           )}
 
