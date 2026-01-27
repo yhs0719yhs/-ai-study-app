@@ -4,10 +4,19 @@ import { ENV } from "./env";
  * OpenAI API를 사용한 문제 분석 및 풀이
  */
 
+export interface SolutionStep {
+  stepNumber: number;
+  title: string;
+  content: string;
+}
+
 export interface ProblemAnalysisResult {
   problemType: string;
   subject: string;
   solution: string;
+  problemNumber?: string;
+  steps: SolutionStep[];
+  finalAnswer: string;
 }
 
 /**
@@ -34,12 +43,29 @@ export async function analyzeProblemWithOpenAI(
             role: "system",
             content: `당신은 학생들의 공부를 돕는 AI 튜터입니다. 학생이 촬영한 시험 문제 이미지를 분석하고, 다음 정보를 JSON 형식으로 제공해야 합니다:
 {
-  "problemType": "문제 유형 (예: 수학-미적분, 영어-독해, 과학-화학 등)",
+  "problemNumber": "문제 번호 (예: '1번', '2번', '(1)', '(2)' 등. 없으면 null)",
+  "problemType": "문제 유형 (예: 일차함수, 영어-독해, 화학-산화환원 등)",
   "subject": "과목 (예: 수학, 영어, 과학, 사회 등)",
-  "solution": "단계별 풀이 과정 (마크다운 형식으로 작성, 학생이 이해하기 쉽도록 친절하고 자세하게)"
+  "steps": [
+    {
+      "stepNumber": 1,
+      "title": "첫 번째 단계 제목",
+      "content": "첫 번째 단계 설명"
+    },
+    {
+      "stepNumber": 2,
+      "title": "두 번째 단계 제목",
+      "content": "두 번째 단계 설명"
+    }
+  ],
+  "finalAnswer": "최종 답 (예: x = 5, y = 3, 답: ③ 등)"
 }
 
-반드시 유효한 JSON 형식으로만 응답하세요.`,
+중요한 지침:
+1. 문제를 푸는 데 필요한 최소 단계만 포함하세요 (2-3단계가 적당)
+2. 각 단계는 명확한 제목과 설명을 포함하세요
+3. 최종 답은 반드시 따로 명시하세요
+4. 반드시 유효한 JSON 형식으로만 응답하세요.`,
           },
           {
             role: "user",
@@ -78,18 +104,23 @@ export async function analyzeProblemWithOpenAI(
       throw new Error("No response from OpenAI API");
     }
 
-    // JSON 파싱
     const result = JSON.parse(content);
 
-    // 응답 검증
-    if (!result.problemType || !result.subject || !result.solution) {
+    if (!result.problemType || !result.subject || !result.steps || !result.finalAnswer) {
       throw new Error("Invalid response format from OpenAI");
     }
+
+    const solutionMarkdown = result.steps
+      .map((step: SolutionStep) => `**${step.stepNumber}단계: ${step.title}**\n${step.content}`)
+      .join("\n\n") + `\n\n**답:** ${result.finalAnswer}`;
 
     return {
       problemType: result.problemType,
       subject: result.subject,
-      solution: result.solution,
+      solution: solutionMarkdown,
+      problemNumber: result.problemNumber || undefined,
+      steps: result.steps,
+      finalAnswer: result.finalAnswer,
     };
   } catch (error) {
     console.error("Error analyzing problem with OpenAI:", error);

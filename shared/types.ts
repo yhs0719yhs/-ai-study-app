@@ -16,6 +16,8 @@ export interface Problem {
   solution: string; // AI 풀이 내용
   problemType: string; // 문제 유형 (예: 수학, 영어, 과학 등)
   subject?: string; // 과목 (선택)
+  problemNumber?: string; // 문제 번호 (예: "1번", "2번")
+  finalAnswer?: string; // 최종 답
   createdAt: string; // ISO 날짜 문자열
 }
 
@@ -34,6 +36,8 @@ export interface AnalysisResult {
   solution: string;
   problemType: string;
   subject?: string;
+  problemNumber?: string;
+  finalAnswer?: string;
 }
 
 /**

@@ -218,6 +218,17 @@ export function SteppedSolution({ steps, rawSolution }: SteppedSolutionProps) {
         })}
       </View>
 
+      {/* Divider */}
+      {finalAnswer && (
+        <View
+          style={{
+            height: 1,
+            backgroundColor: colors.border,
+            marginVertical: 16,
+          }}
+        />
+      )}
+
       {/* Final Answer */}
       {finalAnswer && (
         <View
@@ -243,10 +254,10 @@ export function SteppedSolution({ steps, rawSolution }: SteppedSolutionProps) {
           </Text>
           <Text
             style={{
-              fontSize: 16,
-              fontWeight: "600",
+              fontSize: 18,
+              fontWeight: "700",
               color: colors.foreground,
-              lineHeight: 24,
+              lineHeight: 28,
             }}
           >
             {finalAnswer}

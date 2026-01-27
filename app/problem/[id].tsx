@@ -161,6 +161,29 @@ export default function ProblemDetailScreen() {
         </View>
 
         <View className="p-6 gap-6">
+          {/* Problem Number Badge */}
+          {problem.problemNumber && (
+            <View
+              style={{
+                paddingVertical: 12,
+                paddingHorizontal: 16,
+                backgroundColor: colors.primary,
+                borderRadius: 12,
+                alignItems: "center",
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "700",
+                  color: colors.background,
+                }}
+              >
+                {problem.problemNumber}
+              </Text>
+            </View>
+          )}
+
           {/* Problem Image */}
           <View className="bg-surface rounded-2xl overflow-hidden border border-border">
             <Image

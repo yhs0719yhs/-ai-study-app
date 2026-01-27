@@ -69,6 +69,8 @@ export default function HomeScreen() {
         solution: result.solution,
         problemType: result.problemType,
         subject: result.subject,
+        problemNumber: (result as any).problemNumber,
+        finalAnswer: (result as any).finalAnswer,
         createdAt: new Date().toISOString(),
       };
 
