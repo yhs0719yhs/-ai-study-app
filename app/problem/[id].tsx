@@ -230,7 +230,7 @@ export default function ProblemDetailScreen() {
           <View className="bg-surface rounded-2xl overflow-hidden border border-border">
             <Image
               source={{ uri: problem.imageUri }}
-              style={{ width: "100%", height: 300 }}
+              style={{ width: "100%", height: 450 }}
               resizeMode="contain"
             />
           </View>

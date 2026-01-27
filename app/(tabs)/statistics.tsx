@@ -186,7 +186,7 @@ export default function StatisticsScreen() {
               ) : (
                 <View className="gap-3">
                   {stats.topProblemTypes.slice(0, 3).map((item, index) => (
-                    <View key={index} className="gap-2">
+                    <View key={`type-${item.type}-${index}`} className="gap-2">
                       <View className="flex-row justify-between items-center">
                         <Text className="text-sm text-foreground font-medium">
                           {item.type}
@@ -227,7 +227,7 @@ export default function StatisticsScreen() {
             ) : (
               <View className="gap-2">
                 {stats.recentTrend.map((item, index) => (
-                  <View key={index} className="flex-row justify-between items-center py-2">
+                  <View key={`trend-${item.date}-${index}`} className="flex-row justify-between items-center py-2">
                     <Text className="text-sm text-foreground">
                       {new Date(item.date).toLocaleDateString("ko-KR", {
                         month: "short",
@@ -258,7 +258,7 @@ export default function StatisticsScreen() {
                 </View>
                 <View className="gap-3">
                   {stats.subjectDistribution.slice(0, 3).map((item, index) => (
-                    <View key={index} className="flex-row justify-between items-center">
+                    <View key={`subject-${item.subject}-${index}`} className="flex-row justify-between items-center">
                       <Text className="text-sm text-foreground">{item.subject}</Text>
                       <Text className="text-sm text-muted">{item.count}문제</Text>
                     </View>
