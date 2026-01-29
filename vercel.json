@@ -4,6 +4,12 @@
   "env": {
     "NODE_ENV": "production"
   },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/dist/index.js"
+    }
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
