@@ -47,6 +47,11 @@ const config: ExpoConfig = {
   scheme: env.scheme,
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
+  extra: {
+    eas: {
+      projectId: "09b229dd-e30a-4208-bbfb-dd178f7d4282"
+    }
+  },
   ios: {
     supportsTablet: true,
     bundleIdentifier: env.iosBundleId,
@@ -89,7 +94,7 @@ const config: ExpoConfig = {
     [
       "expo-audio",
       {
-        microphonePermission: "Allow $(PRODUCT_NAME) to access your microphone.",
+        microphonePermission: "Allow $(PRODUCT_NAME ) to access your microphone.",
       },
     ],
     [

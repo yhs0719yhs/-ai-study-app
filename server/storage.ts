@@ -2,15 +2,21 @@
 import { createClient } from "@supabase/supabase-js";
 import { ENV } from "./_core/env";
 
-// Initialize Supabase client
-const supabaseUrl = ENV.supabaseUrl;
-const supabaseAnonKey = ENV.supabaseAnonKey;
+let supabase: any = null;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error("[Storage] ERROR: SUPABASE_URL and SUPABASE_ANON_KEY are required!");
+function getSupabaseClient() {
+  if (!supabase) {
+    const supabaseUrl = ENV.supabaseUrl;
+    const supabaseAnonKey = ENV.supabaseAnonKey;
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error("[Storage] ERROR: SUPABASE_URL and SUPABASE_ANON_KEY are required!");
+    }
+
+    supabase = createClient(supabaseUrl, supabaseAnonKey);
+  }
+  return supabase;
 }
-
-const supabase = createClient(supabaseUrl || "", supabaseAnonKey || "");
 
 export async function storagePut(
   relKey: string,
@@ -18,12 +24,12 @@ export async function storagePut(
   contentType = "application/octet-stream",
 ): Promise<{ key: string; url: string }> {
   try {
+    const client = getSupabaseClient();
     const bucket = "problems";
-    const fileName = relKey.split("/").pop() || "file";
     const path = relKey;
 
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await client.storage
       .from(bucket)
       .upload(path, data, {
         contentType,
@@ -35,7 +41,7 @@ export async function storagePut(
     }
 
     // Get public URL
-    const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(path);
+    const { data: urlData } = client.storage.from(bucket).getPublicUrl(path);
 
     return {
       key: path,
@@ -49,8 +55,9 @@ export async function storagePut(
 
 export async function storageGet(relKey: string): Promise<{ key: string; url: string }> {
   try {
+    const client = getSupabaseClient();
     const bucket = "problems";
-    const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(relKey);
+    const { data: urlData } = client.storage.from(bucket).getPublicUrl(relKey);
 
     return {
       key: relKey,

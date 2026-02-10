@@ -82,6 +82,69 @@ export async function convertHeicToJpg(heicUri: string): Promise<string> {
  * 카메라로 사진 촬영
  */
 export async function takePicture(): Promise<ImagePickerResult | null> {
+  // 웹에서는 파일 입력의 capture 속성을 사용해 카메라를 직접 열도록 처리
+  if (Platform.OS === "web") {
+    try {
+      const webResult = await new Promise<ImagePickerResult | null>((resolve) => {
+        if (typeof document === "undefined") {
+          resolve(null);
+          return;
+        }
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/*";
+        // 모바일 브라우저에서 카메라를 바로 여는 속성
+        // @ts-ignore
+        input.capture = "environment";
+        input.style.display = "none";
+
+        input.onchange = async () => {
+          const file = input.files?.[0];
+          if (!file) {
+            resolve(null);
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const dataUrl = reader.result as string;
+            const img = new Image();
+            img.onload = () => {
+              resolve({
+                uri: dataUrl,
+                width: img.width,
+                height: img.height,
+                type: "image",
+                fileName: file.name || `photo_${Date.now()}.jpg`,
+              });
+            };
+            img.onerror = () => {
+              resolve({
+                uri: dataUrl,
+                width: 1024,
+                height: 1024,
+                type: "image",
+                fileName: file.name || `photo_${Date.now()}.jpg`,
+              });
+            };
+            img.src = dataUrl;
+          };
+          reader.readAsDataURL(file);
+          document.body.removeChild(input);
+        };
+
+        document.body.appendChild(input);
+        input.click();
+      });
+
+      return webResult;
+    } catch (error) {
+      console.error("웹 카메라 열기 오류:", error);
+      Alert.alert("오류", "웹에서 카메라를 여는 중 오류가 발생했습니다.");
+      return null;
+    }
+  }
+
   const hasPermission = await requestCameraPermission();
   if (!hasPermission) {
     return null;

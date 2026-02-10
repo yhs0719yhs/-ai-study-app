@@ -48,9 +48,17 @@ export default function HomeScreen() {
       setLoadingMessage("이미지를 읽는 중입니다...");
       console.log("이미지 URI:", imageUri);
 
-      const base64 = await FileSystem.readAsStringAsync(imageUri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
+      let base64: string;
+
+      if (imageUri.startsWith("data:")) {
+        // web에서 input으로 얻는 data URL은 'data:image/...;base64,...' 형태
+        const idx = imageUri.indexOf(",");
+        base64 = idx >= 0 ? imageUri.substring(idx + 1) : imageUri;
+      } else {
+        base64 = await FileSystem.readAsStringAsync(imageUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+      }
 
       console.log("Base64 변환 완료, 길이:", base64.length);
       setLoadingMessage("AI가 문제를 분석하는 중입니다...");
@@ -65,10 +73,10 @@ export default function HomeScreen() {
       const problem: Problem = {
         id: Date.now().toString(),
         imageUri: imageUri,
-        imageUrl: result.imageUrl,
-        solution: result.solution,
-        problemType: result.problemType,
-        subject: result.subject,
+        imageUrl: (result as any).imageUrl,
+        solution: (result as any).solution,
+        problemType: (result as any).problemType,
+        subject: (result as any).subject,
         problemNumber: (result as any).problemNumber,
         finalAnswer: (result as any).finalAnswer,
         createdAt: new Date().toISOString(),

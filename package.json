@@ -5,8 +5,11 @@
   "main": "expo-router/entry",
   "scripts": {
     "dev": "concurrently -k \"pnpm dev:server\" \"pnpm dev:metro\"",
-    "dev:server": "cross-env NODE_ENV=development tsx watch server/_core/index.ts",
-    "dev:metro": "cross-env EXPO_USE_METRO_WORKSPACE_ROOT=1 npx expo start --web --port ${EXPO_PORT:-8081}",
+    "dev:server": "cross-env NODE_ENV=development PORT=3000 tsx watch server/_core/index.ts",
+    "dev:metro": "npx expo start --port 8081 --host lan",
+    "dev:metro:tunnel": "npx expo start --port 8081 --host tunnel",
+    "dev:metro:lan": "npx expo start --port 8081 --host lan",
+    "dev:web": "npx expo start --web --port 8081",
     "build": "esbuild server/_core/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc --noEmit",
